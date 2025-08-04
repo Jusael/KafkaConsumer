@@ -1,11 +1,13 @@
 package com.example.kafkaconsumer.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
+@Data
 @Schema(description = "서명된 포장지시 상세 DTO")
 public class IfPackingOrderDto {
 

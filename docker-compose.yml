@@ -1,6 +1,11 @@
-# docker-compose.yml
+version: "3.8"
+
 services:
-  myapp:
+  kafka-consumer:
+    container_name: kafka-consumer   # 실제 도커 컨테이너 이름 고정
     build: .
+    ports:
+      - "5999:5999"                  # API 수신 포트
     env_file:
-      - .env
+      - .env                         # 같은 폴더에 있는 .env 자동 주입
+    restart: unless-stopped         # 서버 재시작 시 자동 기동

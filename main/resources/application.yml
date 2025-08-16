@@ -1,7 +1,4 @@
 spring:
-  config:
-    import: optional:file:.env
-
   datasource:
     url: jdbc:mysql://${DB_HOST}:${DB_PORT}/fullter
     username: ${DB_USER}

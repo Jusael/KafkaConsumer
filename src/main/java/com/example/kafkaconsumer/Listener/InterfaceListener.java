@@ -29,6 +29,8 @@ public class InterfaceListener {
 	public void listenOrder(ConsumerRecord<String, String> record) throws Exception {
 		Long queId = Long.parseLong(record.key());
 		String value = record.value();
+		
+		log.info(String.format("order-approve-topic QUE ID 수신 : %d", queId));
 
 		IfOrderDto ifOrderDto = objectMapper.readValue(value, IfOrderDto.class);
 		workOrderService.doFailInterface(ifOrderDto, queId);
@@ -39,6 +41,10 @@ public class InterfaceListener {
 
 		Long queId = Long.parseLong(record.key());
 		String value = record.value();
+		
+
+		log.info(String.format("packing-approve-topic QUE ID 수신 : %d", queId));
+		
 		IfPackingOrderDto ifPackingOrderDto = objectMapper.readValue(value, IfPackingOrderDto.class);
 		packingOrderService.doSuccesInterface(ifPackingOrderDto, queId);
 	}

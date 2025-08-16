@@ -1,0 +1,6 @@
+# docker-compose.yml
+services:
+  myapp:
+    build: .
+    env_file:
+      - .env

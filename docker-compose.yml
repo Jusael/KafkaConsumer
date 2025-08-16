@@ -2,10 +2,10 @@ version: "3.8"
 
 services:
   kafka-consumer:
-    container_name: kafka-consumer   # 실제 도커 컨테이너 이름 고정
+    container_name: kafka-consumer
     build: .
     ports:
-      - "5999:5999"                  # API 수신 포트
+      - "5999:5999"
     env_file:
-      - .env                         # 같은 폴더에 있는 .env 자동 주입
-    restart: unless-stopped         # 서버 재시작 시 자동 기동
+      - ./kafka-consumer/.env      # ✅ 네가 말한 실제 경로 반영!
+    restart: unless-stopped

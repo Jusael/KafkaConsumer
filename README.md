@@ -1,23 +1,14 @@
 JAVA-MES-CONSUMER
 
-Kafka 메시지를 소비(Consume) 하고, 처리 결과를 DB에 기록하는 컨슈머입니다.
+Kafka 메시지를 소비하고, 처리 결과를 DB에 기록하는 컨슈머입니다.
 외부 인터페이스는 현재 Mock 으로 대체되어 있습니다.
 
-처리 흐름
-
-Kafka 토픽에서 메시지 수신
-
-큐 테이블(kafka_execution_queue)에 READY 상태 저장
-
-Mock 인터페이스 실행 → 성공/실패 여부 결정
-
-처리 결과 업데이트
-
-SUCCESS
-
- RETRY_SUCCESS (재시도 중 성공)
-
-FAIL (최대 3회 시도 후 실패)
+- 메시지 수신 → Kafka 토픽
+- 큐 테이블 기록 → READY 상태
+- Mock 인터페이스 실행 → 성공/실패 여부 결정
+ 결과 업데이트
+    - SUCCESS : 정상 처리
+    - RETRY_SUCCESS : 재시도 후 성공
 
 메시지 예시
 {
@@ -38,7 +29,7 @@ CREATE TABLE KAFKA_EXECUTION_QUEUE (
   UPDATED_AT TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
- 환경 변수
+환경 변수
 KAFKA_BOOTSTRAP_SERVERS=kafka:9092
 KAFKA_TOPIC=mes.events
 DB_URL=jdbc:mysql://mysql:3306/mes

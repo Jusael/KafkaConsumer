@@ -1,52 +1,47 @@
 JAVA-MES-CONSUMER
 
-Kafka 메시지를 소비하고 비즈니스 로직을 실행한 뒤, 처리 성공/실패 상태를 DB에 기록합니다. 외부 인터페이스 연동은 현재 mock으로 대체합니다.
+Kafka 메시지를 소비(Consume) 하고, 처리 결과를 DB에 기록하는 컨슈머입니다.
+외부 인터페이스는 현재 Mock 으로 대체되어 있습니다.
 
-핵심 요약
+처리 흐름
 
-역할: Kafka 메시지 소비 → 처리 → kafka_execution_queue 업데이트
+Kafka 토픽에서 메시지 수신
 
-상태값: READY, SUCCESS, FAIL, RETRY_SUCCESS
+큐 테이블(kafka_execution_queue)에 READY 상태 저장
 
-재시도: 최대 3회(지수 백오프 권장)
+Mock 인터페이스 실행 → 성공/실패 여부 결정
 
-아이템포턴시: 키 기준 중복처리 방지(큐 테이블/유니크 인덱스 활용)
+처리 결과 업데이트
 
-인터페이스: 실제 연동 전까지 mock 서비스로 대체
+SUCCESS
 
-아키텍처 개요
-[KAFKA] --> [Consumer] --> [Service] --(처리결과)--> [MySQL.kafka_execution_queue]
-                             \
-                              +--> [MockInterfaceAdapter]
+ RETRY_SUCCESS (재시도 중 성공)
 
+FAIL (최대 3회 시도 후 실패)
 
-Consumer: 특정 토픽 구독, 메시지 역직렬화 → 서비스 호출
-
-Service: 도메인 처리, 트랜잭션 관리, 상태 업데이트
-
-MockInterfaceAdapter: 외부 시스템 연동부를 임시로 대체(성공/실패 시나리오 가변)
-
-선행 조건
-
-Kafka(내부 네트워크): bootstrap.servers=kafka:9092
-
-MySQL: 접속 가능 계정/스키마
-
-JDK 17, Spring Boot 3.0
-
-(운영 배포) Docker / Docker Compose, GitHub Actions 사용 가능
-
-
-메시지 스키마(예시)
+메시지 예시
 {
-  "eventId": "SIG-202508-000123",
+  "eventId": "SIG-202508-0001",
   "type": "SIGN_REQUEST",
-  "payload": {
-    "orderNo": "WO-2025-0815-001",
-    "itemCd": "P-ABC-001",
-    "lotNo": "L20250815-01",
-    "expiresAt": "2025-12-31"
-  },
-  "timestamp": "2025-08-15T12:34:56Z"
+  "payload": { "orderNo": "WO-123" },
+  "timestamp": "2025-08-21T12:00:00Z"
 }
 
+ DB 테이블
+CREATE TABLE KAFKA_EXECUTION_QUEUE (
+  ID BIGINT AUTO_INCREMENT PRIMARY KEY,
+  EVENT_ID VARCHAR(100) UNIQUE,
+  STATUS VARCHAR(20),     -- READY | SUCCESS | FAIL | RETRY_SUCCESS
+  RETRY_COUNT INT DEFAULT 0,
+  ERROR_MESSAGE TEXT,
+  CREATED_AT TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  UPDATED_AT TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+ 환경 변수
+KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+KAFKA_TOPIC=mes.events
+DB_URL=jdbc:mysql://mysql:3306/mes
+DB_USER=root
+DB_PASS=****
+MOCK_MODE=always-success   # always-success | always-fail | random
